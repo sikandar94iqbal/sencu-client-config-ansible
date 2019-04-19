@@ -1,0 +1,6 @@
+
+server1 ansible_connection=ssh ansible_user=root ansible_password=zigron123 ansible_host=192.168.0.182
+
+[servers]
+server1 
+

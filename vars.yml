@@ -1,0 +1,7 @@
+---
+# vars file for setup_sensu_client
+
+sensu_username: "sensu"
+sensu_password: "mysecret"
+sensu_server: "192.168.0.183"
+vhost: "/sensu"

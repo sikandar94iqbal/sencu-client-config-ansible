@@ -1,0 +1,10 @@
+{
+    "rabbitmq": {
+        "host": "192.168.0.183",
+        "port": 5671,
+    "host": "192.168.0.183",
+    "user": "sensu",
+    "password": "mysecret"
+    }
+}
+

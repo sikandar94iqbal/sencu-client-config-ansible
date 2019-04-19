@@ -1,0 +1,11 @@
+{
+    "client": {
+        "address": "192.168.0.182",
+        "environment": "production",
+        "name": "server182.com",
+        "subscriptions": [
+               "ALL","linux","legacy-hosts"
+        ]
+    }
+}
+
