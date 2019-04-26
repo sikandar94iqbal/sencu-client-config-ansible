@@ -1,42 +1,27 @@
 ---
-- hosts: servers
+- hosts: "{{ hosts }}"
   become: true
   become_user: root
   vars_files:
     - vars.yml
   tasks:
 
-  - name: stop sensu-client service on servers
-    service:
-      name: sensu-client
-      state: stopped
-    ignore_errors: yes
+  - name: stop sensu-client service
+    command: docker exec -d pdns pkill -f sensu-client
+    become: true
 
   - name: Get hostname of remote server
     command: hostname
     register: server_name
 
-  # - debug:
-  #    msg: "server name:  {{ server_name.stdout }}"
-
   - name: Get IP of remote server
     command: hostname -i
     register: server_ip
 
-  # - debug:
-  #    msg: "server IP :  {{ server_ip.stdout }}"
-
-
-
-  - name: create sensu directory in host server
-    file:
-      path: "/tmp/sensu_temp"
-      state: directory
-
-
-  #  - name: Copy config files  (from localhost to 182server)
-  #    synchronize: src={{ playbook_dir }} dest=/tmp/sensu_temp
-  #    delegate_to: localhost
+  # - name: create sensu directory in host server
+  #   file:
+  #     path: "/tmp/sensu_temp"
+  #     state: directory
 
   - name: 'edit config file'
     lineinfile: 
@@ -61,18 +46,6 @@
         - { regexp: 'name', line: '        "name": "{{ server_name.stdout }}",' }
     delegate_to: localhost        
 
-
-  # - name: 'edit Rabbitmq file'
-  #   lineinfile: 
-  #    dest: "{{ playbook_dir }}/setup_sensu_client/conf.d/rabbitmq.json"
-  #    regexp: '{{ item.regexp }}'
-  #    line: '{{ item.line }}'
-  #   with_items: 
-  #       - { regexp: 'host', line: '    "host": "{{ sensu_server }}",' }
-  #       - { regexp: 'user', line: '    "user": "{{ sensu_username }}",' }
-  #       - { regexp: 'password', line: '    "password": "{{ sensu_password }}"' }
-
-
   - name: create temp sensu directory in tmp
     file:
       path: "/tmp/sensu"
@@ -94,14 +67,6 @@
       group: root
       mode: "u=rw,g=r,o=r"
 
-  # - name: copy rabbitmq file to tmp folder
-  #   copy:
-  #     src:  "{{ playbook_dir }}/setup_sensu_client/conf.d/rabbitmq.json"
-  #     dest: "/tmp/sensu/conf.d/"
-  #     owner: root
-  #     group: root
-  #     mode: "u=rw,g=r,o=r"
-
   - name: Rabbitmq file to tmp folder
     copy:
       src: "{{ playbook_dir }}/setup_sensu_client/config.json"
@@ -109,8 +74,6 @@
       owner: root
       group: root
       mode: "u=rw,g=r,o=r"
-
-
 
   - name: copy  transport file to tmp folder
     copy:
@@ -136,13 +99,11 @@
       group: root
       mode: "u=rw,g=r,o=r"
 
-
   - name: copy all config files to docker container
     command: docker cp /tmp/sensu/. pdns:/etc/sensu/
-    notify:
-      - start sensu-client service
     become: true
-  handlers:
-    - name: start sensu-client service
-      command: docker exec -d pdns /opt/sensu/bin/sensu-service start client
-      become: true
+
+  - name: start sensu-client service
+    command: docker exec -dit pdns /opt/sensu/bin/sensu-client start
+    become: true
+
